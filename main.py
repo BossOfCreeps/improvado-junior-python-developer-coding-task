@@ -6,11 +6,13 @@
 19.10-19.30 - написнаие логики обратки данных JSON
 19.30-20.00 - написание логики дял XML
 06.30-07.20 - написание логики для TSV
+08.20-09.20 - начал делать advanced
 """
 
 import csv
 import json
 from xml.dom import minidom
+from pprint import pprint
 
 
 class File:
@@ -174,6 +176,7 @@ class TSV(File):
         # сортируем
         def keyFunc(item):
             return item[0]
+
         out_data.sort(key=keyFunc)
 
         # записываем файл
@@ -181,10 +184,88 @@ class TSV(File):
             tsv_writer = csv.writer(out_file, delimiter='\t', lineterminator='\n')
             # шапка
             header = list()
-            for index in range(1, min_D+1):
+            for index in range(1, min_D + 1):
                 header.append("D{}".format(index))
-            for index in range(1, min_M+1):
+            for index in range(1, min_M + 1):
                 header.append("M{}".format(index))
+            tsv_writer.writerow(header)
+            # данные
+            tsv_writer.writerows(out_data)
+
+    def advanced(self, *args):
+        if len(args) == 0:
+            raise Exception("Необходимо передать параметр")
+
+        for arg in args:
+            if arg in File.__subclasses__():
+                raise Exception("Допускаются только тип File")
+
+        # определяем минимальыне длины D[*] и M[*]
+        min_D = len(args[0].D)
+        min_M = len(args[0].M)
+        for arg in args:
+            if len(arg.D) < min_D:
+                min_D = len(arg.D)
+            if len(arg.M) < min_M:
+                min_M = len(arg.M)
+
+        # переносим все значения в один(два) словарь(я)
+        out_D = dict()
+        out_M = dict()
+        for arg in args:
+            for index in range(1, min_D + 1):
+                if index not in out_D.keys():
+                    out_D[index] = list()
+                for element in arg.D[str(index)]:
+                    out_D[index].append(element)
+            for index in range(1, min_M + 1):
+                if index not in out_M.keys():
+                    out_M[index] = list()
+                for element in arg.M[str(index)]:
+                    out_M[index].append(element)
+
+        # обыединяем зачения D и М
+        append_data = list()
+        for key, data in out_D.items():
+            append_data.append(data)
+        for key, data in out_M.items():
+            append_data.append(data)
+
+        # транспонируем
+        append_data = list(zip(*append_data))
+
+        # проходим слегка модифицированным пузырьком все значения
+        out_data = list()
+        for j, row1 in enumerate(append_data):
+            MS = dict()
+            for row2 in append_data[j:]:
+                # если нашли такое же значение
+                if row1[:min_D] == row2[:min_D]:
+                    # обновляем сумму в словаре
+                    for i, M_row in enumerate(row2[min_D:]):
+                        if i not in MS.keys():
+                            MS[i] = 0
+                        MS[i] += int(M_row)
+            # доавляем части строк в матрицу
+            out_data.append(row1[:min_D] + (*MS.values(),))
+
+        # удалим повторения
+        out_data = list(set(out_data))
+
+        # сортируем
+        out_data.sort()
+
+        pprint(out_data)
+
+        # записываем файл
+        with open(self.file, 'w') as out_file:
+            tsv_writer = csv.writer(out_file, delimiter='\t', lineterminator='\n')
+            # шапка
+            header = list()
+            for index in range(1, min_D + 1):
+                header.append("D{}".format(index))
+            for index in range(1, min_M + 1):
+                header.append("MS{}".format(index))
             tsv_writer.writerow(header)
             # данные
             tsv_writer.writerows(out_data)
@@ -196,5 +277,7 @@ json_1 = JSON("json_data.json")
 xml_1 = XML("xml_data.xml")
 
 tsv_1 = TSV("basic_results.tsv")
+tsv_2 = TSV("advanced_results.tsv")
 
 tsv_1.basic(csv_1, csv_2, json_1, xml_1)
+tsv_2.advanced(csv_1, csv_2, json_1, xml_1)
