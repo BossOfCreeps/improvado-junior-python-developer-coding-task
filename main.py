@@ -1,18 +1,22 @@
 """
-18.10-18.20 - начало. создание систеым классов
-18.20-18.30 - тест csv
-18.30-18.40 - транспонирование
-18.40-19.10 - написнаие логики обратки данных СSV
-19.10-19.30 - написнаие логики обратки данных JSON
-19.30-20.00 - написание логики дял XML
-06.30-07.20 - написание логики для TSV
-08.20-09.20 - начал делать advanced
+                                                    код(%)      гугл(%)
+18.10-18.20 - начало. создание систеым классов      100         0
+18.20-18.30 - тест csv                              50          50
+18.30-18.40 - транспонирование                      20          80
+18.40-19.10 - написнаие логики обратки данных СSV   100         0
+19.10-19.30 - написнаие логики обратки данных JSON  95          5
+19.30-20.00 - написание логики дял XML              10          90
+06.30-07.20 - написание логики для TSV              90          10
+08.20-09.20 - начал делать advanced                 100         0
+09.30-10.00 - написание бонусов                     100         0
+
+итого 6 часов 20 минут                           285 мин        95 мин
+                                        (4 часов 45 мин)        (1 час 35 мин)
 """
 
 import csv
 import json
 from xml.dom import minidom
-from pprint import pprint
 
 
 class File:
@@ -65,11 +69,18 @@ class CSV(File):
             index = row[0][1:]
             # если начинается с D, то записываемв D[*], если с M в M[*], иначе ошибка
             if row[0][0] == "D":
-                self.D[index] = row[1:]
+                self.D[index] = list(row[1:])
             elif row[0][0] == "M":
-                self.M[index] = row[1:]
+                self.M[index] = list(row[1:])
             else:
                 raise Exception("Допускаются только D и М")
+
+        for index, values in self.M.items():
+            for i, value in enumerate(values):
+                if not str(value).isnumeric():
+                    print("Значение в столбце M должно быть числом. Файл {}, строка {}, индекс {}. "
+                          "Заменено на 0.".format(self.file, i + 1, index))
+                    self.M[index][i] = 0
 
 
 class JSON(File):
@@ -102,6 +113,13 @@ class JSON(File):
                 else:
                     raise Exception("Допускаются только D и М")
 
+        for index, values in self.M.items():
+            for i, value in enumerate(values):
+                if not str(value).isnumeric():
+                    print("Значение в столбце M должно быть числом. Файл {}, строка {}, индекс {}. "
+                          "Заменено на 0.".format(self.file, i + 1, index))
+                    self.M[index][i] = 0
+
 
 class XML(File):
     def __init__(self, file):
@@ -128,6 +146,13 @@ class XML(File):
                 self.M[index] = list(values)
             else:
                 raise Exception("Допускаются только D и М")
+
+        for index, values in self.M.items():
+            for i, value in enumerate(values):
+                if not str(value).isnumeric():
+                    print("Значение в столбце M должно быть числом. Файл {}, строка {}, индекс {}. "
+                          "Заменено на 0.".format(self.file, i + 1, index))
+                    self.M[index][i] = 0
 
 
 class TSV(File):
@@ -255,8 +280,6 @@ class TSV(File):
         # сортируем
         out_data.sort()
 
-        pprint(out_data)
-
         # записываем файл
         with open(self.file, 'w') as out_file:
             tsv_writer = csv.writer(out_file, delimiter='\t', lineterminator='\n')
@@ -270,6 +293,19 @@ class TSV(File):
             # данные
             tsv_writer.writerows(out_data)
 
+    def __eq__(self, other):
+        super().__init__(self.file)
+
+        # открываем первый файл
+        with open(self.file) as f:
+            self_file_data = list(csv.reader(f, delimiter='\t'))
+
+        # открываем второй файл
+        with open(other.file) as f:
+            other_file_data = list(csv.reader(f, delimiter='\t'))
+
+        return self_file_data == other_file_data
+
 
 csv_1 = CSV("csv_data_1.csv")
 csv_2 = CSV("csv_data_2.csv")
@@ -281,3 +317,23 @@ tsv_2 = TSV("advanced_results.tsv")
 
 tsv_1.basic(csv_1, csv_2, json_1, xml_1)
 tsv_2.advanced(csv_1, csv_2, json_1, xml_1)
+
+print(tsv_1 == TSV("_basic_results.tsv"))
+
+"""БОНУСЫ 
+1) в дальнейшем использовании программы возможно появление требования для работы с другими типами файлов, например .yaml 
+Ответ: Для этого будет необходимо создать класс-наследник от File, который будет иметь метод __init__, 
+парясящий полученный yaml в словари D и М 
+
+2) входные файлы могут быть больших размеров
+Ответ: я не могу без тестирования сказать нечего конкретного по поводу того, как моя система будет с большими данным, 
+первоначальынх проблем я не вижу, но могу ошибаться.
+
+3) возможность обработки строк с некорректными значениями без прекращения выполнения программы с информированием 
+пользователя об ошибках в конце её выполнения
+Ответ: как я понял это относится к общей форме файла (D... M...) - это обработка уже была и к тому, что M должо быть 
+числом - эту обработку добавил
+
+4) подумать об организации тестирования программы 
+Ответ: дописал метод __eq__ для класса TSV, который сравнивает заченяи в двух файлах
+"""
