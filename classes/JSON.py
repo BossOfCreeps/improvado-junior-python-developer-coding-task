@@ -35,3 +35,42 @@ class JSON(File):
 
         self.validation()
 
+    @staticmethod
+    def basic(out, *files):
+        matrix, min_D, min_M = JSON._make_matrix(files)
+        matrix = list(zip(*matrix))
+        matrix.sort(key=lambda i: i[0])
+
+        out_data = list()
+        for values in matrix:
+            temp_dict = dict()
+            for i, value in enumerate(values):
+                if i < min_D:
+                    temp_dict["D{}".format(i+1)] = value
+                else:
+                    temp_dict["M{}".format(i+1-min_D)] = value
+            out_data.append(temp_dict)
+
+        # записываем файл
+        with open(out, 'w') as outfile:
+            json.dump({"fields": out_data}, outfile)
+
+    @staticmethod
+    def advanced(out, *files):
+        matrix, min_D, min_M = File._make_matrix(files)
+        matrix = list(zip(*matrix))
+        data = File._advanced_matrix(matrix, min_D)
+        out_data = list()
+
+        for values in data:
+            temp_dict = dict()
+            for i, value in enumerate(values):
+                if i < min_D:
+                    temp_dict["D{}".format(i + 1)] = value
+                else:
+                    temp_dict["MS{}".format(i + 1 - min_D)] = value
+            out_data.append(temp_dict)
+
+        with open(out, 'w') as outfile:
+            json.dump({"fields": out_data}, outfile)
+
