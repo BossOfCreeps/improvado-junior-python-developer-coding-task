@@ -11,11 +11,11 @@ class JSON(File):
             raise Exception("Неподходящий тип")
 
     def read_data(self):
-        # открываем файл и сразу передохим в fields
+        # открываем файл и сразу переходим в fields
         with open(self.file) as f:
             fields = json.load(f)['fields']
 
-        # проодим по элментам массива
+        # проходим по элементам массива
         for field in fields:
             for word, data in field.items():
                 index = word[1:]
@@ -37,7 +37,7 @@ class JSON(File):
 
     @staticmethod
     def basic(out, *files):
-        matrix, min_D, min_M = JSON._make_matrix(files)
+        matrix, min_d, min_m = JSON._make_matrix(files)
         matrix = list(zip(*matrix))
         matrix.sort(key=lambda i: i[0])
 
@@ -45,10 +45,10 @@ class JSON(File):
         for values in matrix:
             temp_dict = dict()
             for i, value in enumerate(values):
-                if i < min_D:
-                    temp_dict["D{}".format(i+1)] = value
+                if i < min_d:
+                    temp_dict["D{}".format(i + 1)] = value
                 else:
-                    temp_dict["M{}".format(i+1-min_D)] = value
+                    temp_dict["M{}".format(i + 1 - min_d)] = value
             out_data.append(temp_dict)
 
         # записываем файл
@@ -57,20 +57,19 @@ class JSON(File):
 
     @staticmethod
     def advanced(out, *files):
-        matrix, min_D, min_M = File._make_matrix(files)
+        matrix, min_d, min_m = File._make_matrix(files)
         matrix = list(zip(*matrix))
-        data = File._advanced_matrix(matrix, min_D)
+        data = File._advanced_matrix(matrix, min_d)
         out_data = list()
 
         for values in data:
             temp_dict = dict()
             for i, value in enumerate(values):
-                if i < min_D:
+                if i < min_d:
                     temp_dict["D{}".format(i + 1)] = value
                 else:
-                    temp_dict["MS{}".format(i + 1 - min_D)] = value
+                    temp_dict["MS{}".format(i + 1 - min_d)] = value
             out_data.append(temp_dict)
 
         with open(out, 'w') as outfile:
             json.dump({"fields": out_data}, outfile)
-

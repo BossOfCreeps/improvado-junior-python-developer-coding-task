@@ -47,7 +47,5 @@ def test():
     ideal_tsv_2 = TSV("ideal/_advanced_results.tsv")
     ideal_tsv_2.read_data()
 
-    print(_json_1)
-    print(_xml_1)
     assert _tsv_1 == _csv_1 == _json_1 == _xml_1 == ideal_tsv_1
     assert _tsv_2 == _csv_2 == _json_2 == _xml_2 == ideal_tsv_2

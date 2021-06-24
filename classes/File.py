@@ -3,8 +3,8 @@ from abc import ABC, abstractmethod
 
 class File(ABC):
     """
-    переменные для хранения D[], M[] и имени файла
-    Структура D (любые значения) и M (точко числа):
+    Переменные для хранения D[], M[] и имени файла
+    Структура D (любые значения) и M (точка числа):
     {
         "1" : ["a", "b", "c" ... "b"],
         "2" : ["1", "0", "1" ... "5"],
@@ -27,8 +27,7 @@ class File(ABC):
         if type(file) != str:
             raise Exception("В качестве адреса файла должна быть строка")
 
-        # Тут у меня возникла проблема, связанная с тем, что в двух классах потомках dict был одниим.
-        # Видимо из-за того что dict - адресная перменненная. Поэтому я пересоздаю её, чтобы адрес поменялся.
+        # Поэтому я пересоздаю её, чтобы адрес поменялся.
         self.D = dict()
         self.M = dict()
         # заносим адрес до папки
@@ -36,12 +35,15 @@ class File(ABC):
 
     def __str__(self):
         """
-        Даёт возмоднсоть вывести данные класса (применялось для поверки)
-        :return:
+        Даёт возможность вывести данные класса (применялось для поверки)
         """
         return str(dict({"D": self.D, "M": self.M}))
 
     def __eq__(self, other):
+        """
+        Сравнение файлов
+        :param other: другой файл
+        """
         return self.D == other.D and self.M == other.M
 
     def validation(self):
@@ -64,56 +66,56 @@ class File(ABC):
             if arg in File.__subclasses__():
                 raise Exception("Допускаются только тип File")
 
-        # определяем минимальыне длины D[*] и M[*]
-        min_D = len(files[0].D)
-        min_M = len(files[0].M)
+        # определяем минимальные длины D[*] и M[*]
+        min_d = len(files[0].D)
+        min_m = len(files[0].M)
         for arg in files:
-            if len(arg.D) < min_D:
-                min_D = len(arg.D)
-            if len(arg.M) < min_M:
-                min_M = len(arg.M)
+            if len(arg.D) < min_d:
+                min_d = len(arg.D)
+            if len(arg.M) < min_m:
+                min_m = len(arg.M)
 
         # переносим все значения в один(два) словарь(я)
-        out_D = dict()
-        out_M = dict()
+        out_d = dict()
+        out_m = dict()
         for arg in files:
-            for index in range(1, min_D + 1):
-                if index not in out_D.keys():
-                    out_D[index] = list()
+            for index in range(1, min_d + 1):
+                if index not in out_d.keys():
+                    out_d[index] = list()
                 for element in arg.D[str(index)]:
-                    out_D[index].append(element)
-            for index in range(1, min_M + 1):
-                if index not in out_M.keys():
-                    out_M[index] = list()
+                    out_d[index].append(element)
+            for index in range(1, min_m + 1):
+                if index not in out_m.keys():
+                    out_m[index] = list()
                 for element in arg.M[str(index)]:
-                    out_M[index].append(element)
+                    out_m[index].append(element)
 
-        # обыединяем зачения D и М
+        # объединяем значения D и М
         out_data = list()
-        for key, data in out_D.items():
+        for key, data in out_d.items():
             out_data.append(data)
-        for key, data in out_M.items():
+        for key, data in out_m.items():
             out_data.append(data)
 
-        # транспонируем и вернём заначения
-        return out_data, min_D, min_M
+        # транспонируем и вернём значения
+        return out_data, min_d, min_m
 
     @staticmethod
-    def _advanced_matrix(append_data, min_D):
+    def _advanced_matrix(append_data, min_d):
         # проходим слегка модифицированным пузырьком все значения
         out_data = list()
         for j, row1 in enumerate(append_data):
-            MS = dict()
+            ms = dict()
             for row2 in append_data[j:]:
                 # если нашли такое же значение
-                if row1[:min_D] == row2[:min_D]:
+                if row1[:min_d] == row2[:min_d]:
                     # обновляем сумму в словаре
-                    for i, M_row in enumerate(row2[min_D:]):
-                        if i not in MS.keys():
-                            MS[i] = 0
-                        MS[i] += int(M_row)
+                    for i, M_row in enumerate(row2[min_d:]):
+                        if i not in ms.keys():
+                            ms[i] = 0
+                        ms[i] += int(M_row)
             # добавляем части строк в матрицу
-            out_data.append(row1[:min_D] + (*MS.values(),))
+            out_data.append(row1[:min_d] + (*ms.values(),))
 
         # удалим повторения
         out_data = list(set(out_data))

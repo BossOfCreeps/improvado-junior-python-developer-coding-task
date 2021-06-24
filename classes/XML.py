@@ -16,7 +16,7 @@ class XML(File):
         doc = minidom.parse(self.file)
         # ищем все object
         for item in doc.getElementsByTagName("object"):
-            # считываем значения (value) и запоисываем их для каждого object
+            # считываем значения (value) и записываем их для каждого object
             values = list()
             for row in item.getElementsByTagName("value"):
                 values.append(row.firstChild.nodeValue)
@@ -33,20 +33,20 @@ class XML(File):
         self.validation()
 
     @staticmethod
-    def _write_to_file(out, data, min_D, min_M, name_M):
+    def _write_to_file(out, data, min_d, min_m, name_m):
         matrix = list(zip(*data))
 
-        # create the file structure
+        # создаём структуру файла
         data = ET.Element('root')
         items = ET.SubElement(data, 'objects')
 
         item = list(range(len(matrix)))
         for i, values in enumerate(matrix):
             item[i] = ET.SubElement(items, 'object')
-            if i < min_D:
+            if i < min_d:
                 item[i].set('name', 'D{}'.format(i + 1))
             else:
-                item[i].set('name', '{}{}'.format(name_M, i + 1 - min_D))
+                item[i].set('name', '{}{}'.format(name_m, i + 1 - min_d))
 
             values = list(values)
             it = list(range(len(values)))
@@ -54,23 +54,23 @@ class XML(File):
                 it[j] = ET.SubElement(item[i], 'value')
                 it[j].text = str(value)
 
-        # create a new XML file with the results
+        # создаём файл с результатами
         my_data = ET.tostring(data)
         my_file = open(out, "wb")
         my_file.write(my_data)
 
     @staticmethod
     def basic(out, *files):
-        matrix, min_D, min_M = XML._make_matrix(files)
+        matrix, min_d, min_m = XML._make_matrix(files)
         matrix = list(zip(*matrix))
 
         # сортируем
         matrix.sort(key=lambda i: i[0])
-        XML._write_to_file(out, matrix, min_D, min_M, name_M="M")
+        XML._write_to_file(out, matrix, min_d, min_m, name_m="M")
 
     @staticmethod
     def advanced(out, *files):
-        matrix, min_D, min_M = XML._make_matrix(files)
+        matrix, min_d, min_m = XML._make_matrix(files)
         matrix = list(zip(*matrix))
-        matrix = File._advanced_matrix(matrix, min_D)
-        XML._write_to_file(out, matrix, min_D, min_M, name_M="MS")
+        matrix = File._advanced_matrix(matrix, min_d)
+        XML._write_to_file(out, matrix, min_d, min_m, name_m="MS")

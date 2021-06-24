@@ -3,7 +3,6 @@ from classes.JSON import JSON
 from classes.TSV import TSV
 from classes.XML import XML
 
-
 if __name__ == "__main__":
     csv_1 = CSV("resource/csv_data_1.csv")
     csv_1.read_data()
